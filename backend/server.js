@@ -9,6 +9,7 @@ dotenv.config();
 
 const connectDB = require('./config/db');
 const healthRoutes = require('./routes/health');
+const documentRoutes = require('./routes/documents');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 const app = express();
@@ -36,6 +37,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // API Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Error handling
 app.use(notFound);

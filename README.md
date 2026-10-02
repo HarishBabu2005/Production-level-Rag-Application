@@ -19,8 +19,10 @@ A production-oriented full-stack Retrieval-Augmented Generation (RAG) applicatio
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── layout/         # Sidebar, Header, Layout
-│   │   │   └── ui/             # Button, Card, Badge, Table, MetricCard, EmptyState
+│   │   │   ├── ui/             # Button, Card, Badge, Table, MetricCard, EmptyState
+│   │   │   └── UploadModal.jsx # Drag & drop document upload modal
 │   │   ├── pages/              # Dashboard, Documents, Chat, Evaluation
+│   │   ├── services/           # API and document services
 │   │   ├── App.jsx             # Root component with routing
 │   │   ├── main.jsx            # Entry point
 │   │   └── index.css           # Tailwind + design tokens
@@ -32,13 +34,19 @@ A production-oriented full-stack Retrieval-Augmented Generation (RAG) applicatio
 │   ├── config/
 │   │   └── db.js               # MongoDB connection
 │   ├── controllers/
-│   │   └── healthController.js # Health check controller
+│   │   ├── healthController.js # Health check controller
+│   │   └── documentController.js # Document upload and retrieval controller
 │   ├── middleware/
-│   │   └── errorHandler.js     # Error handling middleware
-│   ├── models/                 # Mongoose models (empty — ready to extend)
+│   │   ├── errorHandler.js     # Error handling middleware
+│   │   └── upload.js           # Multer configuration for file uploads
+│   ├── models/                 
+│   │   └── Document.js         # Mongoose Document model
 │   ├── routes/
-│   │   └── health.js           # Health check route
-│   ├── services/               # Business logic (empty — ready to extend)
+│   │   ├── health.js           # Health check route
+│   │   └── documents.js        # Document routes
+│   ├── services/               
+│   │   └── documentService.js  # File processing and text extraction logic
+│   ├── uploads/                # Local storage for uploaded documents
 │   ├── server.js               # Express app entry point
 │   ├── .env.example            # Environment variable template
 │   └── package.json
@@ -100,9 +108,15 @@ The frontend will start at **http://localhost:5173**.
 
 ## API Endpoints
 
-| Method | Endpoint       | Description                     |
-| ------ | -------------- | ------------------------------- |
-| GET    | `/api/health`  | Server health check & DB status |
+| Method | Endpoint                       | Description                     |
+| ------ | ------------------------------ | ------------------------------- |
+| GET    | `/api/health`                  | Server health check & DB status |
+| POST   | `/api/documents/upload`        | Upload PDF/Markdown & extract text |
+| GET    | `/api/documents`               | List all uploaded documents     |
+| GET    | `/api/documents/:id`           | Get specific document details   |
+| DELETE | `/api/documents/:id`           | Delete a document               |
+| POST   | `/api/documents/:id/process`   | Chunk raw text into overlapping chunks |
+| GET    | `/api/documents/:id/chunks`    | Retrieve all chunks for a document |
 
 ## Environment Variables
 
@@ -122,12 +136,21 @@ The frontend will start at **http://localhost:5173**.
 | Chat       | `/chat`        | Chat interface for document Q&A               |
 | Evaluation | `/evaluation`  | RAG pipeline performance metrics              |
 
+## Chunking Architecture
+
+This system uses token-aware chunking (`js-tiktoken`) with overlapping to prepare documents for embeddings.
+
+- **Target Chunk Size**: ~700 tokens
+- **Chunk Overlap**: ~100 tokens
+
+Why chunking? Large language models and embedding models have fixed context windows. Dividing documents into smaller chunks ensures we only fetch relevant semantic parts during RAG retrieval. Overlap prevents context loss between chunk boundaries.
+
 ## Roadmap
 
 This is the foundation layer. Upcoming steps:
 
-- [ ] Document upload & processing
-- [ ] Text extraction & chunking
+- [x] Document upload & processing
+- [x] Text extraction & chunking
 - [ ] Embedding generation & vector storage
 - [ ] RAG retrieval pipeline
 - [ ] Chat with citations

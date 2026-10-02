@@ -1,2 +1,0 @@
-// Models directory
-// Mongoose schemas and models will be added here
